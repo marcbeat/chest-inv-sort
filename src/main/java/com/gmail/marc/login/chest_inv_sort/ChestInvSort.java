@@ -1,35 +1,44 @@
 package com.gmail.marc.login.chest_inv_sort;
 
-
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.Minecraft;
 
 import net.minecraftforge.api.distmarker.Dist;
+// import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
+
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+// import net.minecraftforge.items.wrapper.PlayerInvWrapper;
+import net.minecraftforge.network.ChannelBuilder;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.SimpleChannel;
 
 import org.slf4j.Logger;
 
-import net.minecraft.client.gui.screens.inventory.ContainerScreen;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.NonNullList;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraft.resources.ResourceLocation;
+// import net.minecraft.client.player.LocalPlayer;
+// import net.minecraft.world.Container;
+// import net.minecraft.world.entity.player.Inventory;
+// import net.minecraft.world.inventory.AbstractContainerMenu;
+// import net.minecraft.world.inventory.ChestMenu;
+// import net.minecraft.world.inventory.InventoryMenu;
+// import net.minecraft.world.inventory.Slot;
+// import net.minecraft.world.item.BlockItem;
+// import net.minecraft.world.item.Item;
+// import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
-import org.lwjgl.glfw.GLFW;
+// import java.util.ArrayList;
+// import java.util.HashMap;
+// import java.util.List;
+// import java.util.Map;
+// import java.util.Comparator;
+import java.util.Objects;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(ChestInvSort.MODID)
@@ -38,25 +47,27 @@ public class ChestInvSort
     // Define mod id in a common place for everything to reference
     public static final String MODID = "chest_inv_sort";
     // Directly reference a slf4j logger
-    private static final Logger LOGGER = LogUtils.getLogger();
-    
+    public static final Logger LOGGER = LogUtils.getLogger();
+
+    public static final SimpleChannel CHANNEL = ChannelBuilder
+        .named(new ResourceLocation(MODID, "main"))
+        .clientAcceptedVersions((status, version) -> Objects.equals(version, 1))
+        .serverAcceptedVersions((status, version) -> Objects.equals(version, 1))
+        .networkProtocolVersion(1)
+        .simpleChannel();
+
 
     public ChestInvSort()
     {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        IEventBus forgeEventBus = MinecraftForge.EVENT_BUS;
 
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
-        forgeEventBus.addListener(ChestInvSort::onKeyPressed);
-
-
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
 
-        // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.SPEC);
+        DistExecutor.safeRunWhenOn(Dist.CLIENT, ()->KeyHandler::init);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event)
@@ -65,6 +76,13 @@ public class ChestInvSort
         LOGGER.info("HELLO FROM COMMON SETUP");
 
         LOGGER.info("SORT KEY >> {}", Config.sortKey);
+
+        // int packetId = 0;
+        CHANNEL.messageBuilder(ChestInvSortPacket.class, NetworkDirection.PLAY_TO_SERVER)
+        .decoder(ChestInvSortPacket::fromBytes)
+        .encoder(ChestInvSortPacket::toBytes)
+        .consumerMainThread(ChestInvSortPacket::handle)
+        .add();
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call
@@ -85,49 +103,57 @@ public class ChestInvSort
             // Some client setup code
             LOGGER.info("HELLO FROM CLIENT SETUP");
             LOGGER.info("SORT KEY >> {}", Config.sortKey);
-            LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
         }
     }
 
-    private static void onKeyPressed(ScreenEvent.KeyPressed.Pre event) {
-        // Check if the currently open GUI is a container (inventory or chest)
-        LOGGER.debug("Pressed key >> {}", GLFW.glfwGetKeyName(event.getKeyCode(), event.getScanCode()));
-        if (event.getScreen() instanceof ContainerScreen) {
-            LOGGER.debug("Opened container >> {}", event.getScreen().getClass().getName());
-
-            // Check if the sort inventory key is pressed (replace GLFW.GLFW_KEY_X with the desired key code)
-            String pressedKey = GLFW.glfwGetKeyName(event.getKeyCode(), event.getScanCode());
-            if (pressedKey != null && Config.sortKey.toLowerCase().equals(pressedKey) ) {
-                LOGGER.debug("Correct key pressed! Sorting...");
-                ContainerScreen containerScreen = (ContainerScreen) event.getScreen();
-                LocalPlayer player = containerScreen.getMinecraft().player;
-                if (player == null) return;
-                
-                NonNullList<Slot> slots = player.containerMenu.slots;
-                List<ItemStack> items = new ArrayList<>(slots.size());
-                // Get all non-empty slots
-                for (int i = 0; i < slots.size(); i++) {
-                    Slot slot = slots.get(i);
-                    if (!slot.hasItem()) continue;
-                    ItemStack stack = slot.getItem();
-                    items.add(stack);
-                    LOGGER.debug("Item id in slot {} : {}", i, stack.getDescriptionId());
-                }
-                // Sort items
-                items.sort((ItemStack a, ItemStack b) -> { return a.getDisplayName().getString().compareTo(b.getDisplayName().getString()); });
-                // Put sorted items back into the inventory
-                for (int i = 0; i < slots.size(); i++) {
-                    Slot slot = slots.get(i);
-                    if (i >= items.size()) slot.set(ItemStack.EMPTY);
-                    else
-                        slot.set(items.get(i));
-                }
-            }
-        }
-    }
-    // private void onMouseButtonPressed(ScreenEvent.MouseButtonPressed.Pre event) {
-    //     if (event.getScreen() instanceof ContainerScreen) {
-            
+    // private static void sortContainer(Container container) {
+    //     List<ItemStack> items = new ArrayList<>();
+        
+    //     // Collect all non-empty items
+    //     for (int i = 0; i < container.getContainerSize(); i++) {
+    //         ItemStack stack = container.getItem(i);
+    //         if (!stack.isEmpty()) {
+    //             items.add(stack.copy());
+    //         }
     //     }
+
+    //     // Group items by their type and stack them
+    //     Map<Item, List<ItemStack>> groupedItems = new HashMap<>();
+    //     for (ItemStack stack : items) {
+    //         groupedItems.computeIfAbsent(stack.getItem(), k -> new ArrayList<>()).add(stack);
+    //     }
+
+    //     List<ItemStack> stackedItems = new ArrayList<>();
+    //     for (Map.Entry<Item, List<ItemStack>> entry : groupedItems.entrySet()) {
+    //         Item item = entry.getKey();
+    //         List<ItemStack> itemStacks = entry.getValue();
+    //         int maxStackSize = new ItemStack(item).getMaxStackSize();
+    //         int totalAmount = itemStacks.stream().mapToInt(ItemStack::getCount).sum();
+
+    //         while (totalAmount > 0) {
+    //             int stackSize = Math.min(totalAmount, maxStackSize);
+    //             stackedItems.add(new ItemStack(item, stackSize));
+    //             totalAmount -= stackSize;
+    //         }
+    //     }
+
+    //     // Sort items by type first and then by name
+    //     stackedItems.sort(Comparator
+    //     .comparing((ItemStack stack) -> stack.getItem() instanceof BlockItem ? 0 : 1)
+    //     .thenComparing(stack -> stack.getDisplayName().getString()));
+
+    //     // Clear the inventory
+    //     for (int i = 0; i < container.getContainerSize(); i++) {
+    //         container.setItem(i, ItemStack.EMPTY);
+    //     }
+
+    //     // Put sorted items back into the inventory
+    //     int index = 0;
+    //     for (ItemStack stack : items) {
+    //         container.setItem(index++, stack);
+    //     }
+
+    //     // Notify the container that its contents have changed
+    //     container.setChanged();
     // }
 }
