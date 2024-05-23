@@ -45,7 +45,7 @@ import java.util.Objects;
 public class ChestInvSort
 {
     // Define mod id in a common place for everything to reference
-    public static final String MODID = "chest_inv_sort";
+    public static final String MODID = "chestinvsort";
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
 

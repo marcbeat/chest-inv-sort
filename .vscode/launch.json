@@ -8,7 +8,7 @@
       "mainClass": "net.minecraftforge.bootstrap.ForgeBootstrap",
       "projectName": "ChestInvSort-forgemod",
       "cwd": "${workspaceFolder}\\run",
-      "vmArgs": "-Dforge.logging.console.level\u003ddebug -Dforge.logging.markers\u003dREGISTRIES -Dforge.enabledGameTestNamespaces\u003dchest_inv_sort -Dforge.enableGameTest\u003dtrue -Djava.net.preferIPv6Addresses\u003dsystem -XX:HeapDumpPath\u003dMojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
+      "vmArgs": "-Dforge.logging.console.level\u003ddebug -Dforge.logging.markers\u003dREGISTRIES -Dforge.enabledGameTestNamespaces\u003dchestinvsort -Dforge.enableGameTest\u003dtrue -Djava.net.preferIPv6Addresses\u003dsystem -XX:HeapDumpPath\u003dMojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
       "args": "--launchTarget forge_userdev_client --version MOD_DEV --assetIndex 12 --assetsDir C:\\Users\\marc\\.gradle\\caches\\forge_gradle\\assets --gameDir .",
       "env": {
         "MOD_CLASSES": "${workspaceFolder}\\build\\sourcesSets\\main",
@@ -24,7 +24,7 @@
       "projectName": "ChestInvSort-forgemod",
       "cwd": "${workspaceFolder}\\run-data",
       "vmArgs": "-Dforge.logging.console.level\u003ddebug -Dforge.logging.markers\u003dREGISTRIES -Djava.net.preferIPv6Addresses\u003dsystem",
-      "args": "--launchTarget forge_userdev_data --assetIndex 12 --assetsDir C:\\Users\\marc\\.gradle\\caches\\forge_gradle\\assets --gameDir . --mod chest_inv_sort --all --output D:\\Users\\marc\\repos\\ChestInvSort-forgemod\\src\\generated\\resources --existing D:\\Users\\marc\\repos\\ChestInvSort-forgemod\\src\\main\\resources",
+      "args": "--launchTarget forge_userdev_data --assetIndex 12 --assetsDir C:\\Users\\marc\\.gradle\\caches\\forge_gradle\\assets --gameDir . --mod chestinvsort --all --output D:\\Users\\marc\\repos\\ChestInvSort-forgemod\\src\\generated\\resources --existing D:\\Users\\marc\\repos\\ChestInvSort-forgemod\\src\\main\\resources",
       "env": {
         "MOD_CLASSES": "${workspaceFolder}\\build\\sourcesSets\\main",
         "MCP_MAPPINGS": "official_1.20.4"
@@ -38,7 +38,7 @@
       "mainClass": "net.minecraftforge.bootstrap.ForgeBootstrap",
       "projectName": "ChestInvSort-forgemod",
       "cwd": "${workspaceFolder}\\run",
-      "vmArgs": "-Dforge.logging.console.level\u003ddebug -Dforge.logging.markers\u003dREGISTRIES -Dforge.enabledGameTestNamespaces\u003dchest_inv_sort -Djava.net.preferIPv6Addresses\u003dsystem",
+      "vmArgs": "-Dforge.logging.console.level\u003ddebug -Dforge.logging.markers\u003dREGISTRIES -Dforge.enabledGameTestNamespaces\u003dchestinvsort -Djava.net.preferIPv6Addresses\u003dsystem",
       "args": "--launchTarget forge_userdev_server_gametest --gameDir .",
       "env": {
         "MOD_CLASSES": "${workspaceFolder}\\build\\sourcesSets\\main",
@@ -53,7 +53,7 @@
       "mainClass": "net.minecraftforge.bootstrap.ForgeBootstrap",
       "projectName": "ChestInvSort-forgemod",
       "cwd": "${workspaceFolder}\\run",
-      "vmArgs": "-Dforge.logging.console.level\u003ddebug -Dforge.logging.markers\u003dREGISTRIES -Dforge.enabledGameTestNamespaces\u003dchest_inv_sort -Dforge.enableGameTest\u003dtrue -Djava.net.preferIPv6Addresses\u003dsystem",
+      "vmArgs": "-Dforge.logging.console.level\u003ddebug -Dforge.logging.markers\u003dREGISTRIES -Dforge.enabledGameTestNamespaces\u003dchestinvsort -Dforge.enableGameTest\u003dtrue -Djava.net.preferIPv6Addresses\u003dsystem",
       "args": "--launchTarget forge_userdev_server --gameDir . --nogui",
       "env": {
         "MOD_CLASSES": "${workspaceFolder}\\build\\sourcesSets\\main",
