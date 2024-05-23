@@ -25,14 +25,14 @@ public class ChestInvSortPacket {
             if (ctx.isServerSide()) {
                 // Handle packet on the server side
                 ServerPlayer player = ctx.getSender();
-                ChestInvSort.LOGGER.debug("[{}] Received Packet @ Server!", ChestInvSort.MODID);
+                ChestInvSort.LOGGER.debug("Received Packet @ Server!");
                 if (player != null) {
-                    ChestInvSort.LOGGER.debug("[{}] Sender of packet is player '{}'!", ChestInvSort.MODID, player.getName().getString());
+                    ChestInvSort.LOGGER.debug("Sender of packet is player '{}'!", player.getName().getString());
                     ChestInvSortPacketHandler.handlePacket(player, msg.isChest);
                 }
             }
             else
-                ChestInvSort.LOGGER.warn("[{}] Packet received not on server side!", ChestInvSort.MODID);
+                ChestInvSort.LOGGER.warn("Packet received not on server side!");
         });
         ctx.setPacketHandled(true);
     }
