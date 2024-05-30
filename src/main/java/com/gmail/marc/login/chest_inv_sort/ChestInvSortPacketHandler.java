@@ -64,18 +64,13 @@ public class ChestInvSortPacketHandler {
         for (int i = InventoryMenu.INV_SLOT_START; i < InventoryMenu.INV_SLOT_END; i++) {
             Slot slot = inventoryMenu.getSlot(i);
             ItemStack stack = slot.getItem();
-            ChestInvSort.LOGGER.debug(stack.getItem().getDescriptionId());
+            // ChestInvSort.LOGGER.debug(stack.getItem().getDescriptionId());
             if (!stack.isEmpty()) {
                 items.add(stack);
             }
             slot.set(ItemStack.EMPTY); // Clear slot
         }
         NonNullList<ItemStack> sortedItems = stackAndSortItems(items);
-        // for (int i = 0; i < sortedItems.size()-1; i++) {
-        //     Slot slot = inventoryMenu.getSlot(i+InventoryMenu.INV_SLOT_START);
-        //     slot.set(sortedItems.get(i));
-        //     slot.setChanged();
-        // }
         int j = 0;
         for (int i = InventoryMenu.INV_SLOT_START; i < InventoryMenu.INV_SLOT_END; i++) {
             Slot slot = inventoryMenu.getSlot(i);
