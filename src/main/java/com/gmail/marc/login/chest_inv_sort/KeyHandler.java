@@ -51,4 +51,21 @@ public class KeyHandler {
         // ChestInvSort.LOGGER.debug("Correct key pressed! Start sorting...");
         ChestInvSort.CHANNEL.send(new ChestInvSortPacket(isChest), PacketDistributor.SERVER.noArg());
     }
+
+    @SubscribeEvent
+    public void onMouseMiddleClicked(ScreenEvent.MouseButtonPressed.Pre event) {
+        // Check if the currently open GUI is a container (inventory or chest)  
+        boolean isChest = false;
+        Screen openedScreen = event.getScreen();
+        if (openedScreen instanceof ContainerScreen) {
+            isChest = true;
+        }
+        else if (! (openedScreen instanceof InventoryScreen)) return;
+
+        // Check if the sort inventory key is pressed (defined via config)
+        if (event.getButton() != GLFW.GLFW_MOUSE_BUTTON_MIDDLE) return;
+        
+        // ChestInvSort.LOGGER.debug("Correct key pressed! Start sorting...");
+        ChestInvSort.CHANNEL.send(new ChestInvSortPacket(isChest), PacketDistributor.SERVER.noArg());
+    }
 }
