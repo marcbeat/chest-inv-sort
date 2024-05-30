@@ -9,139 +9,116 @@ import java.util.Map;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.inventory.ShulkerBoxMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
 
 
 public class ChestInvSortPacketHandler {
     static void handlePacket(ServerPlayer player, boolean isChest) {
         ChestInvSort.LOGGER.debug("Handling Packet @ Server!");
-        NonNullList<ItemStack> sortedItemStackList = player.containerMenu.getItems(); // Temporary variable fill
+        NonNullList<ItemStack> sortedItemStackList = player.containerMenu.getItems();
         if (isChest == true) {
             if (player.containerMenu instanceof ChestMenu chestMenu) {
-                sortedItemStackList = sortContainer(chestMenu);
-                Container container = chestMenu.getContainer();
-                if (container instanceof ChestBlockEntity chestEntity) {
-                    // ChestInvSort.LOGGER.debug("chestEntity size: {}", chestEntity.getContainerSize());
-                    for (int i = 0; i < chestEntity.getContainerSize(); i++) {
-                        chestEntity.setItem(i, sortedItemStackList.get(i));
-                    }
-                    chestEntity.setChanged();
-                }
-                else
-                    ChestInvSort.LOGGER.debug("ChestMenu is not in ChestBlockEntity, cannot sort!");
+                sortedItemStackList = sortSlots(chestMenu);
             }
-            // else if (player.containerMenu instanceof HorseInventoryMenu) // TODO
-            //     sortChest((HorseInventoryMenu)player.containerMenu);
-            // else if (player.containerMenu instanceof ShulkerBoxMenu boxMenu) { // TODO
-            //     sortedItemStackList = sortContainer(boxMenu);
-            //     // Container container = boxMenu
-            //     for (int i = 0; i < 27; i++) {
-            //         boxMenu.setItem(i, sortedItemStackList.get(i));
-            //     }
-            //     // boxEntity.setChanged();
-            // }
-
             // Send a packet to update all slots in the container to the client
             player.connection.send(new ClientboundContainerSetContentPacket(player.containerMenu.containerId, player.containerMenu.incrementStateId(), sortedItemStackList, ItemStack.EMPTY));
         }
         else {
-            sortedItemStackList = sortContainer(player.inventoryMenu);
-            // player.inventoryMenu.clearCraftingContent();
-            Inventory playerInventory = player.getInventory();
-            // ChestInvSort.LOGGER.debug("Size of inventory items: {}", playerInventory.items.size());
-            // playerInventory.items.forEach(stack -> ChestInvSort.LOGGER.debug("playerInventory.items: {}", stack.getDisplayName().getString()));
-            for (int i = InventoryMenu.INV_SLOT_START; i <= InventoryMenu.INV_SLOT_END; i++) {
-                playerInventory.items.set(i, sortedItemStackList.get(i));
-            }
-            playerInventory.setChanged();
+            sortedItemStackList = sortSlots(player.inventoryMenu);
 
             // Send a packet to update all slots in the container to the client
             player.connection.send(new ClientboundContainerSetContentPacket(player.inventoryMenu.containerId, player.inventoryMenu.incrementStateId(), sortedItemStackList, ItemStack.EMPTY));
         }
     }
 
-    static NonNullList<ItemStack> sortContainer(ChestMenu containerMenu) {
-        ChestInvSort.LOGGER.debug("Sorting ChestMenu!");
-        NonNullList<ItemStack> chestInventory = containerMenu.getItems();
-        int slotCount = 9 * containerMenu.getRowCount();
-        sortItems(chestInventory, 0, slotCount - 1);
-        // chestInventory.forEach(stack -> ChestInvSort.LOGGER.debug("Item: {}", stack.getDisplayName().getString()));
-        // containerMenu.getContainer().setChanged();
-        containerMenu.slots.forEach((slot -> slot.setChanged()));
-        containerMenu.broadcastChanges();
-        return chestInventory;
-    }
-    static NonNullList<ItemStack> sortContainer(ShulkerBoxMenu containerMenu) {
-        ChestInvSort.LOGGER.debug("Sorting ShulkerBoxMenu!");
-        NonNullList<ItemStack> boxInventory = containerMenu.getItems();
-        int slotCount = 27; // Shulker boxes always have 27 slots
-        sortItems(boxInventory, 0, slotCount - 1);
-        containerMenu.slots.forEach((slot -> slot.setChanged()));
-        containerMenu.broadcastChanges();
-        return boxInventory;
-    }
-    static NonNullList<ItemStack> sortContainer(InventoryMenu inventory) {
-        ChestInvSort.LOGGER.debug("Sorting InventoryMenu!");
-        NonNullList<ItemStack> inventoryItems = inventory.getItems();
-        // inventoryItems.forEach(stack -> ChestInvSort.LOGGER.debug("Item: {}", stack.getDisplayName().getString())); // DEBUG
-        sortItems(inventoryItems, InventoryMenu.INV_SLOT_START, InventoryMenu.INV_SLOT_END - 1);
-        inventory.slots.forEach((slot -> slot.setChanged()));
-        inventory.broadcastChanges();
-        return inventoryItems;
-    }
-    private static void sortItems(NonNullList<ItemStack> unsortedItems, int startSlot, int endSlot) {
-        ChestInvSort.LOGGER.debug("Sorting Items!");
-        List<ItemStack> nonEmptyItems = new ArrayList<>(endSlot - startSlot + 1);
-        // Get all non-empty slots
-        for (int i = startSlot; i <= endSlot; i++) {
-            if (unsortedItems.get(i) != ItemStack.EMPTY)
-                nonEmptyItems.add(unsortedItems.get(i));
-            // ChestInvSort.LOGGER.debug("Item id in slot {} : {}", i, unsortedItems.get(i).getDisplayName().getString());
+    private static NonNullList<ItemStack> sortSlots(ChestMenu chestMenu) {
+        int slotCount = 9 * chestMenu.getRowCount();
+        NonNullList<ItemStack> items = NonNullList.create();
+        // Extract items from chestMenu
+        for (int i = 0; i < slotCount; i++) {
+            Slot slot = chestMenu.getSlot(i);
+            ItemStack stack = slot.getItem();
+            if (!stack.isEmpty()) {
+                items.add(stack);
+            }
+            slot.set(ItemStack.EMPTY); // Clear slot
         }
-
-        // Group items by their type and stack them
-        Map<Item, List<ItemStack>> groupedItems = new HashMap<>();
-        for (ItemStack stack : nonEmptyItems) {
-            groupedItems.computeIfAbsent(stack.getItem(), k -> new ArrayList<>()).add(stack);
+        NonNullList<ItemStack> sortedItems = stackAndSortItems(items);
+        int index = 0;
+        for (Slot slot : chestMenu.slots) {
+            slot.set(sortedItems.get(index));
+            slot.setChanged();
+            index++;
         }
+        chestMenu.broadcastChanges();
+        return sortedItems;
+    }
 
-        List<ItemStack> stackedItems = new ArrayList<>();
-        for (Map.Entry<Item, List<ItemStack>> entry : groupedItems.entrySet()) {
-            Item item = entry.getKey();
-            List<ItemStack> itemStacks = entry.getValue();
-            int maxStackSize = new ItemStack(item).getMaxStackSize();
-            int totalAmount = itemStacks.stream().mapToInt(ItemStack::getCount).sum();
+    private static NonNullList<ItemStack> sortSlots(InventoryMenu inventoryMenu) {
+        NonNullList<ItemStack> items = NonNullList.create();
+        // Extract items from chestMenu
+        for (int i = InventoryMenu.INV_SLOT_START; i < InventoryMenu.INV_SLOT_END; i++) {
+            Slot slot = inventoryMenu.getSlot(i);
+            ItemStack stack = slot.getItem();
+            // ChestInvSort.LOGGER.debug(stack.getItem().getDescriptionId());
+            if (!stack.isEmpty()) {
+                items.add(stack);
+            }
+            slot.set(ItemStack.EMPTY); // Clear slot
+        }
+        NonNullList<ItemStack> sortedItems = stackAndSortItems(items);
+        int j = 0;
+        for (int i = InventoryMenu.INV_SLOT_START; i < InventoryMenu.INV_SLOT_END; i++) {
+            Slot slot = inventoryMenu.getSlot(i);
+            slot.set(sortedItems.get(j));
+            slot.setChanged();
+            j++;
+        }
+        inventoryMenu.broadcastChanges();
+        return sortedItems;
+    }
 
-            while (totalAmount > 0) {
-                int stackSize = Math.min(totalAmount, maxStackSize);
-                stackedItems.add(new ItemStack(item, stackSize));
-                totalAmount -= stackSize;
+    private static NonNullList<ItemStack> stackAndSortItems(NonNullList<ItemStack> items) {
+        // Stack items
+        Map<String, List<ItemStack>> itemMap = new HashMap<>();
+        for (ItemStack item : items) {
+            String key = item.getItem().getDescriptionId() + item.getTag();
+            itemMap.putIfAbsent(key, new ArrayList<>());
+            List<ItemStack> stackList = itemMap.get(key);
+
+            boolean stacked = false;
+            for (ItemStack stack : stackList) {
+                if (stack.getCount() < stack.getMaxStackSize()) {
+                    int newCount = stack.getCount() + item.getCount();
+                    int remaining = Math.max(0, newCount - stack.getMaxStackSize());
+                    stack.setCount(Math.min(stack.getMaxStackSize(), newCount));
+                    item.setCount(remaining);
+                    if (remaining == 0) {
+                        stacked = true;
+                        break;
+                    }
+                }
+            }
+            if (!stacked) {
+                stackList.add(item);
             }
         }
-            
-        // Sort items by type first and then by name
-        stackedItems.sort(Comparator
-        .comparing((ItemStack stack) -> stack.getItem() instanceof BlockItem ? 0 : 1)
-        .thenComparing(stack -> stack.getDisplayName().getString()));
-        
-        // Populate original container with stackedItems
-        int j = 0;
-        for (int i = startSlot; i <= endSlot; i++) {
-            if (j >= stackedItems.size())
-                unsortedItems.set(i, ItemStack.EMPTY);
-            else
-                unsortedItems.set(i, stackedItems.get(j));
-            j++;
-            // ChestInvSort.LOGGER.debug("Item: {}", unsortedItems.get(i).getDisplayName().getString());
+
+        // Collect stacked items into a list
+        NonNullList<ItemStack> stackedItems = NonNullList.create();
+        for (List<ItemStack> stackList : itemMap.values()) {
+            stackedItems.addAll(stackList);
         }
-        ChestInvSort.LOGGER.debug("DONE SORTING!");
+
+        // Sort items: blocks first, then items, then by display name
+        stackedItems.sort(Comparator
+            .comparing((ItemStack itemStack) -> !(itemStack.getItem() instanceof BlockItem))
+            .thenComparing(itemStack -> itemStack.getHoverName().getString()));
+
+        return stackedItems;
     }
 }
