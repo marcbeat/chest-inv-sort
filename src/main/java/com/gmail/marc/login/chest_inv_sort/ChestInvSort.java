@@ -66,7 +66,6 @@ public class ChestInvSort
     public void onServerStarting(ServerStartingEvent event)
     {
         // Do something when the server starts
-        // LOGGER.info("HELLO from server starting");
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
@@ -77,7 +76,6 @@ public class ChestInvSort
         public static void onClientSetup(FMLClientSetupEvent event)
         {
             // Some client setup code
-            LOGGER.info("SORT KEY >> {}", Config.sortKey);
         }
     }
 }
