@@ -25,7 +25,7 @@ public class KeyHandler {
         KeyConflictContext.GUI, // Mapping can only be used when a screen is open
         InputConstants.Type.MOUSE, // Default mapping is on the mouse
         GLFW.GLFW_MOUSE_BUTTON_MIDDLE, // Default button is mouse middle
-        "key.categories.misc" // Mapping will be in the misc category
+        "key.categories." + ChestInvSort.MODID // Mapping will be in the misc category
     ));
     public KeyHandler() {
 
