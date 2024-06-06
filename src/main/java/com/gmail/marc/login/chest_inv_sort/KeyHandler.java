@@ -6,8 +6,11 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
@@ -54,6 +57,13 @@ public class KeyHandler {
         }
         else if (! (openedScreen instanceof InventoryScreen)) return;
 
+        // Check if player is hovering his own player inventory (and not the chest menu)
+        if (openedScreen instanceof AbstractContainerScreen containerScreen) {
+            Slot hoveredSlot = containerScreen.getSlotUnderMouse();
+            if (hoveredSlot != null && hoveredSlot.container instanceof Inventory)
+                isChest = false; // Player is hoevering his own inventory, so sort this instead
+        }
+
         // Check if the sort inventory key is pressed
         if (!SORT_MAPPING.get().isActiveAndMatches(InputConstants.getKey(event.getKeyCode(), event.getScanCode()))) return;
         // ChestInvSort.LOGGER.debug("Correct key pressed! Start sorting...");
@@ -69,6 +79,13 @@ public class KeyHandler {
             isChest = true;
         }
         else if (! (openedScreen instanceof InventoryScreen)) return;
+
+        // Check if player is hovering his own player inventory (and not the chest menu)
+        if (openedScreen instanceof AbstractContainerScreen containerScreen) {
+            Slot hoveredSlot = containerScreen.getSlotUnderMouse();
+            if (hoveredSlot != null && hoveredSlot.container instanceof Inventory)
+                isChest = false; // Player is hoevering his own inventory, so sort this instead
+        }
 
         // Check if the sort inventory button is pressed
         if (!SORT_MAPPING.get().isActiveAndMatches(InputConstants.Type.MOUSE.getOrCreate(event.getButton()))) return;
