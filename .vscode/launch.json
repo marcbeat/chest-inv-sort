@@ -12,7 +12,7 @@
       "args": "--launchTarget forge_userdev_client --version MOD_DEV --assetIndex 12 --assetsDir C:\\Users\\marc\\.gradle\\caches\\forge_gradle\\assets --gameDir .",
       "env": {
         "MOD_CLASSES": "${workspaceFolder}\\build\\sourcesSets\\main",
-        "MCP_MAPPINGS": "parchment_2024.04.14-1.20.4"
+        "MCP_MAPPINGS": "parchment_2024.06.02-1.20.6"
       },
       "preLaunchTask": "prepareRunClientCompile"
     },
@@ -27,7 +27,7 @@
       "args": "--launchTarget forge_userdev_data --assetIndex 12 --assetsDir C:\\Users\\marc\\.gradle\\caches\\forge_gradle\\assets --gameDir . --mod chestinvsort --all --output D:\\Users\\marc\\repos\\ChestInvSort-forgemod\\src\\generated\\resources --existing D:\\Users\\marc\\repos\\ChestInvSort-forgemod\\src\\main\\resources",
       "env": {
         "MOD_CLASSES": "${workspaceFolder}\\build\\sourcesSets\\main",
-        "MCP_MAPPINGS": "parchment_2024.04.14-1.20.4"
+        "MCP_MAPPINGS": "parchment_2024.06.02-1.20.6"
       },
       "preLaunchTask": "prepareRunDataCompile"
     },
@@ -42,7 +42,7 @@
       "args": "--launchTarget forge_userdev_server_gametest --gameDir .",
       "env": {
         "MOD_CLASSES": "${workspaceFolder}\\build\\sourcesSets\\main",
-        "MCP_MAPPINGS": "parchment_2024.04.14-1.20.4"
+        "MCP_MAPPINGS": "parchment_2024.06.02-1.20.6"
       },
       "preLaunchTask": "prepareRunGameTestServerCompile"
     },
@@ -57,7 +57,7 @@
       "args": "--launchTarget forge_userdev_server --gameDir . --nogui",
       "env": {
         "MOD_CLASSES": "${workspaceFolder}\\build\\sourcesSets\\main",
-        "MCP_MAPPINGS": "parchment_2024.04.14-1.20.4"
+        "MCP_MAPPINGS": "parchment_2024.06.02-1.20.6"
       },
       "preLaunchTask": "prepareRunServerCompile"
     }
