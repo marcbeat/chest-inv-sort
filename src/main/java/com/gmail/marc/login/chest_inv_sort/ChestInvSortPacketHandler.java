@@ -86,7 +86,7 @@ public class ChestInvSortPacketHandler {
         // Stack items
         Map<String, List<ItemStack>> itemMap = new HashMap<>();
         for (ItemStack item : items) {
-            String key = item.getItem().getDescriptionId() + item.getTag();
+            String key = item.getItem().getDescriptionId() + item.getHoverName().getString();
             itemMap.putIfAbsent(key, new ArrayList<>());
             List<ItemStack> stackList = itemMap.get(key);
 
