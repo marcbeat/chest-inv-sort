@@ -31,7 +31,7 @@ public class ChestInvSort
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final SimpleChannel CHANNEL = ChannelBuilder
-        .named(new ResourceLocation(MODID, "main"))
+        .named(ResourceLocation.fromNamespaceAndPath(MODID, "main"))
         .clientAcceptedVersions((status, version) -> Objects.equals(version, 1))
         .serverAcceptedVersions((status, version) -> Objects.equals(version, 1))
         .networkProtocolVersion(1)
